@@ -1,0 +1,14 @@
+services:
+  client-maps-socketio:
+    container_name: maps-front_end
+    build: 
+      context: ./client-maps-socketio
+      dockerfile: Dockerfile
+    ports:
+      - '3000:5173'
+    volumes:
+      - ./client-maps-socketio:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+    
