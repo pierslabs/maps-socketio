@@ -7,8 +7,20 @@ services:
     ports:
       - '3000:5173'
     volumes:
-      - ./client-maps-socketio:/app
       - /app/node_modules
+      - ./client-maps-socketio:/app
     stdin_open: true
     tty: true
+
+  server-maps-socketio:
+    container_name: maps-back_end
+    build: 
+      context: ./server-maps-socketio
+      dockerfile: Dockerfile
+    ports:
+      - '4000:4000'
+    volumes:
+      - /app/node_modules
+      - ./server-maps-socketio:/app
+
     
