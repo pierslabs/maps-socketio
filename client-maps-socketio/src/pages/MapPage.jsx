@@ -14,7 +14,7 @@ const MapPage = () => {
   //newMarker
   useEffect(() => {
     newMarker$.subscribe((marker) => {
-      // console.log(marker);
+      console.log(marker);
     });
   }, [newMarker$]);
 
