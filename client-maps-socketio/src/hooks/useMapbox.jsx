@@ -3,8 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import { v4 } from 'uuid';
 import { Subject } from 'rxjs';
 
-mapboxgl.accessToken =
-  'pk.eyJ1IjoicGllcnNsYWJzIiwiYSI6ImNsZGxiN2V6czAwMm0zd28yM2J0b2VubzAifQ.5tf6t9kzsH6fk1Sfwtk_CQ';
+mapboxgl.accessToken = import.meta.env.VITE_TOKEN_MAPBOX;
 
 export const useMapbox = (initialPoints) => {
   const mapDiv = useRef(null);
@@ -26,21 +25,21 @@ export const useMapbox = (initialPoints) => {
   const [coords, setCoords] = useState(initialPoints);
 
   // Agregate markers function
-  const createMarker = useCallback((ev) => {
-    const { lat, lng } = ev.lngLat;
+  const createMarker = useCallback((ev, id) => {
+    const { lng, lat } = ev.lngLat || ev;
     const marker = new mapboxgl.Marker();
-    // TODO:
-    marker.id = v4();
+    marker.id = id || v4();
 
     marker.setLngLat([lng, lat]).addTo(mapView.current).setDraggable(true);
     markers.current[marker.id] = marker;
 
-    // TODO: if marker has id not emit
-    newMarker.current.next({
-      id: marker.id,
-      lng,
-      lat,
-    });
+    if (!id) {
+      newMarker.current.next({
+        id: marker.id,
+        lng,
+        lat,
+      });
+    }
 
     // Listen marker movement
     marker.on('drag', (ev) => {
@@ -57,6 +56,10 @@ export const useMapbox = (initialPoints) => {
     });
   }, []);
 
+  const updatePosition = useCallback(({ id, lng, lat }) => {
+    markers.current[id].setLngLat([lng, lat]);
+  }, []);
+
   useEffect(() => {
     const map = new mapboxgl.Map({
       container: mapDiv.current,
@@ -70,15 +73,14 @@ export const useMapbox = (initialPoints) => {
   useEffect(() => {
     mapView.current?.on('move', () => {
       const { lat, lng } = mapView.current.getCenter();
+
       setCoords({
         lng: lng.toFixed(4),
         lat: lat.toFixed(4),
         zoom: mapView.current.getZoom().toFixed(2),
       });
     });
-
-    return () => mapView.current?.off('move');
-  }, []);
+  }, [coords]);
 
   //Create Pints when click
 
@@ -93,5 +95,6 @@ export const useMapbox = (initialPoints) => {
     markerMovement$: markerMovement.current,
     setRef,
     createMarker,
+    updatePosition,
   };
 };
